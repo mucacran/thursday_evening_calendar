@@ -1,10 +1,11 @@
 {
   "version": 2,
   "dgSpecHash": "JEj37D0/m8A=",
+  "dgSpecHash": "MQ9wlds0Su8=",
   "success": true,
-  "projectFilePath": "C:\\Users\\JoeMC\\Documents\\CSE325 Projects\\Thursday_Evening_Calendar\\thursday_evening_calendar\\booking_calendar\\booking_calendar.csproj",
+  "projectFilePath": "/home/omarlinp/MEGA/BYU-I/2026 Winter/CSE-325/thursday_evening_calendar/booking_calendar/booking_calendar.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\JoeMC\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.3\\microsoft.aspnetcore.app.internal.assets.10.0.3.nupkg.sha512"
+    "/home/omarlinp/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.3/microsoft.aspnetcore.app.internal.assets.10.0.3.nupkg.sha512"
   ],
   "logs": []
 }
