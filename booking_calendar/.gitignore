@@ -1,10 +1,13 @@
-
-booking_calendar/bin
-booking_calendar/obj
+.dotnet/
+.vs/
+.vscode/
 
 # -----------------------------
 # Build output
 # -----------------------------
+bin/
+obj/
+
 [Bb]in/
 [Oo]bj/
 out/
