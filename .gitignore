@@ -1,0 +1,71 @@
+# -----------------------------
+# Build output
+# -----------------------------
+[Bb]in/
+[Oo]bj/
+out/
+
+# -----------------------------
+# User-specific files
+# -----------------------------
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# -----------------------------
+# IDE / Editor
+# -----------------------------
+.vs/
+.vscode/
+.idea/
+
+# -----------------------------
+# Logs and temp files
+# -----------------------------
+*.log
+*.tmp
+*.temp
+*.cache
+
+# -----------------------------
+# NuGet
+# -----------------------------
+*.nupkg
+*.snupkg
+packages/
+
+# -----------------------------
+# Test and coverage artifacts
+# -----------------------------
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage/
+
+# -----------------------------
+# Publish artifacts
+# -----------------------------
+publish/
+artifacts/
+
+# -----------------------------
+# OS files
+# -----------------------------
+.DS_Store
+Thumbs.db
+
+# -----------------------------
+# Secrets / local environment files
+# -----------------------------
+.env
+.env.*
+*.pfx
+*.snk
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+
+# Keep example env files if needed
+!.env.example
