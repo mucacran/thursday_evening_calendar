@@ -1,0 +1,39 @@
+@page "/addEvent"
+@inject HttpClient Http
+
+<h3>Add Meeting</h3>
+
+<div class="event-form">
+   <EditForm Model="@eventModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label> Name: </label>
+        <InputText @bind-Value="eventModel.Name" />
+    </div>
+
+    <div>
+        <label> Course: </label>
+        <InputText @bind-Value="eventModel.Course" />
+    </div>
+
+    <div>
+        <label> Date: </label>
+        <InputDate @bind-Value="eventModel.Date" />
+    </div>
+
+    <div>
+        <label> Description: </label>
+        <InputTextArea @bind-Value="eventModel.Description" />
+    </div>
+   </EditForm>
+</div>
+
+@code {
+    private EventModel eventModel = new();
+
+    private async Task HandleValidSubmit(){
+        
+    }
+}
