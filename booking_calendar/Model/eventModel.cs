@@ -5,14 +5,14 @@ namespace booking_calendar;
 public class EventModel
 {
     [Required]
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     [Required]
-    public string Course { get; set; }
+    public string? Course { get; set; }
 
     [Required]
     public DateTime Date { get; set; }
 
     [MaxLength(500)]
-    public string Description { get; set; }
+    public string? Description { get; set; }
 }
