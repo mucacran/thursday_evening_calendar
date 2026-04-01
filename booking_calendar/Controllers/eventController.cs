@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace booking_calendar;
 
-[Route("addEvents")]
+[Route("api/events")]
 [ApiController]
 
-public class EventController : Controller
+public class EventController : ControllerBase
 {
     private readonly meetingContext _db;
 
