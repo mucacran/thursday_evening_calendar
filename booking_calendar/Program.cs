@@ -1,4 +1,20 @@
+/***********************************************************************************
+ * This is the main entry point of the application. It sets up the web application
+ * and configures the services and middleware that will be used throughout the app.
+ * It also maps the controllers and Razor components to their respective routes.
+    * The application is built using ASP.NET Core and follows the MVC pattern, with
+    * Razor components for the frontend and API controllers for handling HTTP requests.
+***********************************************************************************/
+using Microsoft.EntityFrameworkCore;
 using booking_calendar.Components;
+
+/***********************************************************************************
+ * The booking_calendar namespace contains all the classes and components related to
+ * the booking calendar application. This includes the DbContext for managing events,
+ * the API controllers for handling HTTP requests, and any Razor components used in
+ * the frontend of the application. By organizing the code into a namespace, we can keep related classes together and avoid naming conflicts with classes from other libraries or parts of the application.
+***********************************************************************************/
+using booking_calendar;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +30,18 @@ builder.Services.AddRazorComponents()
  * in our application.
 ***********************************************************************************/
 builder.Services.AddControllers(); // add controllers to the service collection
+
+/***********************************************************************************
+ * AddDbContext is a method that adds a DbContext to the service collection. In this case,
+ * we are adding the meetingContext, which is our custom DbContext for managing events in
+ * our application. We are configuring it to use an in-memory database called "CalendarTestDb",
+ * which allows us to store and retrieve event data without needing a physical database server.
+    * This is useful for testing and development purposes, as it provides a simple way to manage
+    * data without the overhead of setting up a full database.
+***********************************************************************************/
+builder.Services.AddDbContext<meetingContext>(options =>
+    options.UseInMemoryDatabase("CalendarTestDb"));
+
 
 var app = builder.Build();
 
