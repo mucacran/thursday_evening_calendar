@@ -43,11 +43,11 @@ else
             @foreach (var eventItem in events)
             {
                 <tr>
-                    <td>@eventItem.id</td>
-                    <td>@eventItem.name</td>
-                    <td>@eventItem.date.ToShortDateString()</td>
-                    <td>@eventItem.description</td>
-                    <td>@eventItem.course_Id</td>
+                    <td>@eventItem.Id</td>
+                    <td>@eventItem.Name</td>
+                    <td>@eventItem.Date.ToShortDateString()</td>
+                    <td>@eventItem.Description</td>
+                    <td>@eventItem.CourseId</td>
                 </tr>
             }
         </tbody>
@@ -73,10 +73,20 @@ else
             var requestUrl = NavigationManager.ToAbsoluteUri("/api/events");
 
             // This calls the API and reads the JSON into a simple list.
-            var result = await ApiClient.GetFromJsonAsync<List<EventListItem>>(requestUrl);
+            var result = await ApiClient.GetFromJsonAsync<List<EventListItem>>(requestUrl) ?? new List<EventListItem>();
 
-            // This keeps the page safe if the API returns no data.
-            events = result ?? new List<EventListItem>();
+            // This keeps text fields safe for the table if a value is missing.
+            foreach (var eventItem in result)
+            {
+                // This gives the event a friendly fallback name if needed.
+                eventItem.Name = string.IsNullOrWhiteSpace(eventItem.Name) ? "No name provided" : eventItem.Name;
+
+                // This gives the event a friendly fallback description if needed.
+                eventItem.Description = string.IsNullOrWhiteSpace(eventItem.Description) ? "No description provided." : eventItem.Description;
+            }
+
+            // This stores the safe list for rendering.
+            events = result;
         }
         catch
         {
@@ -94,18 +104,18 @@ else
     private class EventListItem
     {
         // This stores the event id.
-        public int id { get; set; }
+        public int Id { get; set; }
 
         // This stores the event name.
-        public string name { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         // This stores the event date.
-        public DateTime date { get; set; }
+        public DateTime Date { get; set; }
 
         // This stores the event description.
-        public string description { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
-        // This stores the related course id.
-        public int course_Id { get; set; }
+        // This stores the related course id with a consistent name.
+        public int CourseId { get; set; }
     }
 }

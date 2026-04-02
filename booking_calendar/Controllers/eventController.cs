@@ -22,11 +22,11 @@ public class EventController : ControllerBase // this is a simple controller tha
     [HttpGet]
     public IActionResult GetEvents()
     {
-        // This creates a list to hold the sample events.
-        var events = new List<Event>
+        // This creates a predictable list response for the list view.
+        var events = new List<EventListItemDto>
         {
             // This adds the first sample event to the list.
-            new Event
+            new EventListItemDto
             {
                 // This sets the event id.
                 Id = 1,
@@ -36,11 +36,11 @@ public class EventController : ControllerBase // this is a simple controller tha
                 Date = new DateTime(2026, 4, 5),
                 // This sets the event description.
                 Description = "Discuss project goals and weekly tasks.",
-                // This sets the course id.
-                Course_Id = 310
+                // This sets the course id using a simple read-only name.
+                CourseId = 310
             },
             // This adds the second sample event to the list.
-            new Event
+            new EventListItemDto
             {
                 // This sets the event id.
                 Id = 2,
@@ -50,11 +50,11 @@ public class EventController : ControllerBase // this is a simple controller tha
                 Date = new DateTime(2026, 4, 8),
                 // This sets the event description.
                 Description = "Review table structure and sample records.",
-                // This sets the course id.
-                Course_Id = 325
+                // This sets the course id using a simple read-only name.
+                CourseId = 325
             },
             // This adds the third sample event to the list.
-            new Event
+            new EventListItemDto
             {
                 // This sets the event id.
                 Id = 3,
@@ -64,12 +64,12 @@ public class EventController : ControllerBase // this is a simple controller tha
                 Date = new DateTime(2026, 4, 12),
                 // This sets the event description.
                 Description = "Prepare slides and practice the final presentation.",
-                // This sets the course id.
-                Course_Id = 310
+                // This sets the course id using a simple read-only name.
+                CourseId = 310
             }
         };
 
-        // This returns the list of mock events with a 200 OK response.
+        // This always returns a JSON list for the UI to read.
         return Ok(events);
     }
 
@@ -79,6 +79,25 @@ public class EventController : ControllerBase // this is a simple controller tha
         _db.Events.Add(evt);
         await _db.SaveChangesAsync();
         return Ok(evt);
+    }
+
+    // This DTO keeps the list view response simple and read-only.
+    private class EventListItemDto
+    {
+        // This stores the event id.
+        public int Id { get; set; }
+
+        // This stores the event name and defaults to an empty value if needed later.
+        public string Name { get; set; } = string.Empty;
+
+        // This stores the event date.
+        public DateTime Date { get; set; }
+
+        // This stores the event description and defaults to an empty value if needed later.
+        public string Description { get; set; } = string.Empty;
+
+        // This stores the course id with a consistent read-only name.
+        public int CourseId { get; set; }
     }
 
 }
