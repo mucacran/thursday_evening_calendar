@@ -1,0 +1,111 @@
+@page "/events"
+@attribute [StreamRendering]
+@inject HttpClient ApiClient
+@inject NavigationManager NavigationManager
+
+@* This page loads events from the existing API and shows them in a simple table. *@
+
+<PageTitle>Events</PageTitle>
+
+<h1>Events</h1>
+
+<p>This page shows the current list of events.</p>
+
+@if (isLoading)
+{
+    @* This message appears while the page is waiting for data from the API. *@
+    <p><em>Loading events...</em></p>
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    @* This message appears if the API request does not succeed. *@
+    <p class="text-danger">@errorMessage</p>
+}
+else if (events.Count == 0)
+{
+    @* This message appears when the API returns an empty list. *@
+    <p>No events are available right now.</p>
+}
+else
+{
+    @* This table displays the events returned by the API. *@
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Course</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var eventItem in events)
+            {
+                <tr>
+                    <td>@eventItem.id</td>
+                    <td>@eventItem.name</td>
+                    <td>@eventItem.date.ToShortDateString()</td>
+                    <td>@eventItem.description</td>
+                    <td>@eventItem.course_Id</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    // This list stores the events returned by the API.
+    private List<EventListItem> events = new List<EventListItem>();
+
+    // This flag controls when the loading message should appear.
+    private bool isLoading = true;
+
+    // This stores a friendly error message if the request fails.
+    private string errorMessage = string.Empty;
+
+    // This method runs when the page first loads.
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // This creates an absolute URL for the existing events endpoint.
+            var requestUrl = NavigationManager.ToAbsoluteUri("/api/events");
+
+            // This calls the API and reads the JSON into a simple list.
+            var result = await ApiClient.GetFromJsonAsync<List<EventListItem>>(requestUrl);
+
+            // This keeps the page safe if the API returns no data.
+            events = result ?? new List<EventListItem>();
+        }
+        catch
+        {
+            // This shows a friendly message if the API request fails.
+            errorMessage = "Unable to load events right now. Please try again later.";
+        }
+        finally
+        {
+            // This stops the loading message after the request finishes.
+            isLoading = false;
+        }
+    }
+
+    // This simple view model matches the fields returned by the API.
+    private class EventListItem
+    {
+        // This stores the event id.
+        public int id { get; set; }
+
+        // This stores the event name.
+        public string name { get; set; } = string.Empty;
+
+        // This stores the event date.
+        public DateTime date { get; set; }
+
+        // This stores the event description.
+        public string description { get; set; } = string.Empty;
+
+        // This stores the related course id.
+        public int course_Id { get; set; }
+    }
+}
