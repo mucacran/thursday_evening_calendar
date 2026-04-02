@@ -1,4 +1,14 @@
 /***********************************************************************************
+ * This file is the main entry point of the booking calendar application. It sets up
+ * the web application, configures services, and defines the middleware pipeline.
+ * The application uses ASP.NET Core with Razor components for the frontend and API
+ * controllers for handling HTTP requests related to event management.
+ ***********************************************************************************/
+using System.Net.Http; // This namespace provides classes for sending HTTP requests and receiving HTTP responses from a resource identified by a URI. It is used in the application to make HTTP calls to the API controllers for managing events.
+using Microsoft.AspNetCore.Components; // This namespace contains classes and interfaces for building interactive web UIs using Blazor. It includes components, routing, and other features that allow us to create a rich user interface for our booking calendar application.
+
+
+/***********************************************************************************
  * This is the main entry point of the application. It sets up the web application
  * and configures the services and middleware that will be used throughout the app.
  * It also maps the controllers and Razor components to their respective routes.
@@ -30,6 +40,7 @@ builder.Services.AddRazorComponents()
  * in our application.
 ***********************************************************************************/
 builder.Services.AddControllers(); // add controllers to the service collection
+builder.Services.AddHttpClient(); // add HttpClient to the service collection, which allows us to make HTTP requests to our API controllers from our Razor components
 
 /***********************************************************************************
  * AddDbContext is a method that adds a DbContext to the service collection. In this case,
@@ -41,6 +52,13 @@ builder.Services.AddControllers(); // add controllers to the service collection
 ***********************************************************************************/
 builder.Services.AddDbContext<meetingContext>(options =>
     options.UseInMemoryDatabase("CalendarTestDb"));
+
+// This adds a scoped service for HttpClient, which allows us to make HTTP requests to our API controllers from our Razor components. The BaseAddress is set to the base URI of the application, which ensures that our HTTP requests are correctly routed to the API endpoints defined in our controllers.
+builder.Services.AddScoped(sp =>
+{
+    var navigationManager = sp.GetRequiredService<NavigationManager>();
+    return new HttpClient { BaseAddress = new Uri(navigationManager.BaseUri) };
+});
 
 
 var app = builder.Build();
