@@ -17,6 +17,7 @@ using booking_calendar.Components;
  * the frontend of the application. By organizing the code into a namespace, we can keep related classes together and avoid naming conflicts with classes from other libraries or parts of the application.
 ***********************************************************************************/
 using booking_calendar;
+using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,12 @@ builder.Services.AddRazorComponents()
 ***********************************************************************************/
 builder.Services.AddControllers(); // add controllers to the service collection
 builder.Services.AddHttpClient(); // add HttpClient to the service collection, which allows us to make HTTP requests to our API controllers from our Razor components
+
+
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri(sp.GetRequiredService<NavigationManager>().BaseUri)
+});
 
 /***********************************************************************************
  * AddDbContext is a method that adds a DbContext to the service collection. In this case,

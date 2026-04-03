@@ -1,10 +1,11 @@
 @page "/addEvent"
+@rendermode InteractiveServer
 @inject HttpClient Http
 
 <h3>Add Meeting</h3>
 
 <div class="event-form">
-   <EditForm Model="@eventModel" OnValidSubmit="HandleValidSubmit">
+   <EditForm Model="@eventModel" OnValidSubmit="HandleValidSubmit" FormName="AddEventForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -27,6 +28,8 @@
         <label> Description: </label>
         <InputTextArea @bind-Value="eventModel.Description" />
     </div>
+
+    <button type="submit">Add Event</button>
    </EditForm>
 </div>
 
@@ -37,7 +40,7 @@
 
 
 @code {
-    EventModel eventModel = new();
+    private EventModel eventModel = new();
     private string? message;
 
     private async Task HandleValidSubmit(){
