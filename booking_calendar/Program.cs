@@ -9,6 +9,7 @@
 ***********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 using booking_calendar.Components;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure; 
 
 /***********************************************************************************
  * The booking_calendar namespace contains all the classes and components related to
@@ -49,8 +50,9 @@ builder.Services.AddScoped(sp => new HttpClient
     * This is useful for testing and development purposes, as it provides a simple way to manage
     * data without the overhead of setting up a full database.
 ***********************************************************************************/
-builder.Services.AddDbContext<meetingContext>(options =>
-    options.UseInMemoryDatabase("CalendarTestDb"));
+builder.Services.AddDbContext<meetingContext>(options => 
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    ));
 
 var app = builder.Build();
 
