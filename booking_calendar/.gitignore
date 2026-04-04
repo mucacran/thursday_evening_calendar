@@ -70,10 +70,12 @@ Thumbs.db
 # -----------------------------
 # Secrets / local environment files
 # -----------------------------
+*.pem
 .env
 .env.*
 *.pfx
 *.snk
+appsettings.json
 appsettings.Development.json
 appsettings.Local.json
 appsettings.*.local.json
