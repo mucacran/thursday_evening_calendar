@@ -7,7 +7,7 @@ public class EventModel
     [Required]
     public string Name { get; set; } = string.Empty;
 
-    public string? CourseId { get; set; } 
+    public int? CourseId { get; set; } 
 
     [Required]
     public DateTime Date { get; set; }
