@@ -91,7 +91,7 @@ public class EventController : ControllerBase // this is a simple controller tha
         public string Name { get; set; } = string.Empty;
 
         // This stores the event date.
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } = DateTime.Now;
 
         // This stores the event description and defaults to an empty value if needed later.
         public string Description { get; set; } = string.Empty;

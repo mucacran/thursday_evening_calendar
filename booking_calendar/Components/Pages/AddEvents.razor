@@ -16,12 +16,12 @@
 
     <div>
         <label> Course: </label>
-        <InputText @bind-Value="eventModel.CourseId" />
+        <InputNumber @bind-Value="eventModel.CourseId" />
     </div>
 
     <div>
         <label> Date: </label>
-        <InputDate @bind-Value="eventModel.Date" />
+        <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="eventModel.Date" />
     </div>
 
     <div>
