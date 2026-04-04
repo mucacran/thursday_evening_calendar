@@ -1,10 +1,11 @@
 @page "/addEvent"
+@rendermode InteractiveServer
 @inject HttpClient Http
 
 <h3>Add Meeting</h3>
 
 <div class="event-form">
-   <EditForm Model="@eventModel" OnValidSubmit="HandleValidSubmit">
+   <EditForm Model="@eventModel" OnValidSubmit="HandleValidSubmit" FormName="AddEventForm">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -15,7 +16,7 @@
 
     <div>
         <label> Course: </label>
-        <InputText @bind-Value="eventModel.Course" />
+        <InputNumber @bind-Value="eventModel.Course_Id" />
     </div>
 
     <div>
@@ -27,6 +28,8 @@
         <label> Description: </label>
         <InputTextArea @bind-Value="eventModel.Description" />
     </div>
+
+    <button type="submit">Add Event</button>
    </EditForm>
 </div>
 
@@ -37,11 +40,11 @@
 
 
 @code {
-    EventModel eventModel = new();
+    private EventModel eventModel = new();
     private string? message;
 
     private async Task HandleValidSubmit(){
-        var response = await Http.PutAsJsonAsync("api/events", eventModel);
+        var response = await Http.PostAsJsonAsync("api/events", eventModel);
         if (response.IsSuccessStatusCode)
         {
             message = "✅ Event added successfully!";

@@ -5,10 +5,10 @@
       "Microsoft.AspNetCore": "Warning"
     }
   },
-
   "ConnectionStrings": {
     "DefaultConnection": ""
   },
-
-  "AllowedHosts": "*"
+  "AllowedHosts": "*",
+  
+  "_README": "Copy this file to appsettings.json. Use user-secrets for database credentials - see README.md for instructions."
 }

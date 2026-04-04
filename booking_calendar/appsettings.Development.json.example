@@ -1,0 +1,18 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": ""
+  },
+  
+  "_README": [
+    "Copy this file to appsettings.Development.json",
+    "DO NOT put real passwords here!",
+    "Use user-secrets instead:",
+    "dotnet user-secrets set \"ConnectionStrings:DefaultConnection\" \"Server=YOUR_HOST;Database=YOUR_DB;User=YOUR_USER;Password=YOUR_PASSWORD;Port=24959;SslMode=Required;\""
+  ]
+}

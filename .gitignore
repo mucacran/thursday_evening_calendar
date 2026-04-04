@@ -71,9 +71,12 @@ Thumbs.db
 .env.*
 *.pfx
 *.snk
+appsettings.json
 appsettings.Development.json
 appsettings.Local.json
 appsettings.*.local.json
 
-# Keep example env files if needed
+# Keep example files
 !.env.example
+!appsettings.json.example
+!appsettings.Development.json.example
