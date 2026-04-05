@@ -50,9 +50,12 @@ builder.Services.AddScoped(sp => new HttpClient
     * This is useful for testing and development purposes, as it provides a simple way to manage
     * data without the overhead of setting up a full database.
 ***********************************************************************************/
-builder.Services.AddDbContext<meetingContext>(options => 
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
-    ));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no está configurado.");
+
+builder.Services.AddDbContext<meetingContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21)))
+);
 
 var app = builder.Build();
 
