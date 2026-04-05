@@ -51,13 +51,15 @@ builder.Services.AddScoped(sp => new HttpClient
     * data without the overhead of setting up a full database.
 ***********************************************************************************/
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no está configurado.");
+    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no estï¿½ configurado.");
 
 builder.Services.AddDbContext<meetingContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21)))
 );
 
 var app = builder.Build();
+
+await SeedCoursesAsync(app);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -85,3 +87,24 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+static async Task SeedCoursesAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<meetingContext>();
+
+    if (await db.Courses.AnyAsync())
+    {
+        return;
+    }
+
+    db.Courses.Add(new Course
+    {
+        Name = "Default Course",
+        CourseId = "COURSE-001",
+        Description = "Initial seed course for event creation",
+        Priviledge = 0
+    });
+
+    await db.SaveChangesAsync();
+}

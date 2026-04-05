@@ -8,6 +8,7 @@ public class meetingContext : DbContext
     }
 
     public DbSet<Event> Events { get; set; }
+    public DbSet<Course> Courses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

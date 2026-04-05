@@ -27,7 +27,7 @@ public class EventController : ControllerBase // this is a simple controller tha
             .Select(e => new EventListItemDto
             {
                 Id = e.Id,
-                Name = e.Name,
+                Name = e.Name ?? string.Empty,
                 Date = e.Date,
                 Description = e.Description ?? string.Empty,
                 CourseId = e.CourseId ?? 0  // Use 0 if CourseId is null
@@ -38,10 +38,45 @@ public class EventController : ControllerBase // this is a simple controller tha
         return Ok(events);
     }
 
+    // This endpoint returns available courses so the UI can send valid CourseId values.
+    [HttpGet("courses")]
+    public async Task<IActionResult> GetCourses()
+    {
+        var courses = await _db.Courses
+            .OrderBy(c => c.Id)
+            .Select(c => new CourseListItemDto
+            {
+                Id = c.Id,
+                Name = string.IsNullOrWhiteSpace(c.Name) ? $"Course {c.Id}" : c.Name
+            })
+            .ToListAsync();
+
+        return Ok(courses);
+    }
+
     // Use HttpPost for creating new resources (HttpPut is for updates)
     [HttpPost]
     public async Task<IActionResult> AddEvent([FromBody] EventModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var normalizedCourseId = model.CourseId.GetValueOrDefault() == 0 ? null : model.CourseId;
+
+        if (normalizedCourseId.HasValue)
+        {
+            var courseExists = await _db.Courses.AnyAsync(c => c.Id == normalizedCourseId.Value);
+            if (!courseExists)
+            {
+                return BadRequest(new
+                {
+                    message = $"CourseId {normalizedCourseId.Value} no existe en Course. Usa 0/null o un Id valido."
+                });
+            }
+        }
+
         // Map EventModel to Event entity
         var evt = new Event
         {
@@ -49,12 +84,23 @@ public class EventController : ControllerBase // this is a simple controller tha
             Date = model.Date,
             Description = model.Description ?? string.Empty,
             // Convert 0 to null for CourseId (when input is empty, it sends 0)
-            CourseId = model.CourseId == 0 ? null : model.CourseId
+            CourseId = normalizedCourseId
         };
-        
-        _db.Events.Add(evt);
-        await _db.SaveChangesAsync();
-        return Ok(evt);
+
+        try
+        {
+            _db.Events.Add(evt);
+            await _db.SaveChangesAsync();
+            return Ok(evt);
+        }
+        catch (DbUpdateException ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "No se pudo guardar el evento en la base de datos.",
+                detail = ex.InnerException?.Message ?? ex.Message
+            });
+        }
     }
 
     // This DTO keeps the list view response simple and read-only.
@@ -74,6 +120,13 @@ public class EventController : ControllerBase // this is a simple controller tha
 
         // This stores the course id with a consistent read-only name.
         public int CourseId { get; set; }
+    }
+
+    // This DTO is used by the add-event form to display valid course IDs.
+    private class CourseListItemDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 
 }

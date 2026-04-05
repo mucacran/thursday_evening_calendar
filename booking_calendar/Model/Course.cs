@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 namespace booking_calendar;
 
+[Table("Course")]
 public class Course
 {
     public int Id { get; set; }
