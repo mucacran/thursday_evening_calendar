@@ -59,7 +59,14 @@ builder.Services.AddDbContext<meetingContext>(options =>
 
 var app = builder.Build();
 
-await SeedCoursesAsync(app);
+try
+{
+    await SeedCoursesAsync(app);
+}
+catch (Exception ex)
+{
+    app.Logger.LogWarning(ex, "Course seed skipped because the database was not available during startup.");
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -68,12 +75,12 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+app.UseStatusCodePagesWithReExecute("/not-found");
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+app.UseStaticFiles();
 /***********************************************************************************
  * MapControllers is a method that maps attribute-routed API controllers.
  * This means that it will look for any classes that have the [ApiController]
