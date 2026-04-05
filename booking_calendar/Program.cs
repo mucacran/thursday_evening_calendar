@@ -9,7 +9,7 @@
 ***********************************************************************************/
 using Microsoft.EntityFrameworkCore;
 using booking_calendar.Components;
-using Microsoft.AspNetCore.Components;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure; 
 
 /***********************************************************************************
  * The booking_calendar namespace contains all the classes and components related to
@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Components;
  * the frontend of the application. By organizing the code into a namespace, we can keep related classes together and avoid naming conflicts with classes from other libraries or parts of the application.
 ***********************************************************************************/
 using booking_calendar;
+using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,49 +36,23 @@ builder.Services.AddRazorComponents()
 builder.Services.AddControllers(); // add controllers to the service collection
 builder.Services.AddHttpClient(); // add HttpClient to the service collection, which allows us to make HTTP requests to our API controllers from our Razor components
 
-// Configure HttpClient with BaseAddress for Blazor Server components
+
 builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri(sp.GetRequiredService<NavigationManager>().BaseUri)
 });
 
 /***********************************************************************************
- * Database Configuration - Safely connects to MySQL with InMemory fallback
- * 
- * This setup reads the connection string from configuration (user-secrets or appsettings).
- * If no connection string is found, it falls back to an in-memory database for local testing.
- * 
- * IMPORTANT: Never commit real passwords to source control!
- * To set your connection string securely, use user-secrets:
- *   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=your-host;Database=your-db;User=your-user;Password=your-password;Port=3306;SslMode=Required;"
- * 
- * MySQL version is set explicitly to avoid startup connection attempts.
+ * AddDbContext is a method that adds a DbContext to the service collection. In this case,
+ * we are adding the meetingContext, which is our custom DbContext for managing events in
+ * our application. We are configuring it to use an in-memory database called "CalendarTestDb",
+ * which allows us to store and retrieve event data without needing a physical database server.
+    * This is useful for testing and development purposes, as it provides a simple way to manage
+    * data without the overhead of setting up a full database.
 ***********************************************************************************/
-
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-if (!string.IsNullOrEmpty(connectionString))
-{
-    // Use MySQL with explicit server version (avoids AutoDetect connection at startup)
-    builder.Services.AddDbContext<meetingContext>(options =>
-        options.UseMySql(connectionString, 
-            new MySqlServerVersion(new Version(8, 0, 21)))
-    );
-    
-    // Log that we're using MySQL (safe - no password printed)
-    Console.WriteLine($"[Database] Using MySQL connection");
-}
-else
-{
-    // Fallback to InMemory database if no connection string configured
-    builder.Services.AddDbContext<meetingContext>(options =>
-        options.UseInMemoryDatabase("CalendarTestDb")
-    );
-    
-    Console.WriteLine("[Database] WARNING: No connection string found. Using InMemory database (data will not persist).");
-    Console.WriteLine("[Database] To configure MySQL, use: dotnet user-secrets set \"ConnectionStrings:DefaultConnection\" \"Server=...\"");
-}
-
+builder.Services.AddDbContext<meetingContext>(options => 
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))
+    ));
 
 var app = builder.Build();
 
