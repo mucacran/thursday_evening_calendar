@@ -2,58 +2,76 @@
 @rendermode InteractiveServer
 @inject HttpClient Http
 
-<h3>Add Meeting</h3>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Add Meeting</h4>
+                </div>
+                <div class="card-body">
 
-<div class="event-form">
-   <EditForm Model="@eventModel" OnValidSubmit="HandleValidSubmit" FormName="AddEventForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+                    <EditForm Model="@eventModel" OnValidSubmit="HandleValidSubmit" FormName="AddEventForm">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger mb-3" />
 
-    <div>
-        <label> Name: </label>
-        <InputText @bind-Value="eventModel.Name" />
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <InputText class="form-control" @bind-Value="eventModel.Name" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Course</label>
+                            <InputNumber class="form-control" @bind-Value="eventModel.CourseId" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Date</label>
+                            <InputDate class="form-control"
+                                       Type="InputDateType.DateTimeLocal"
+                                       @bind-Value="eventModel.Date" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <InputTextArea class="form-control" rows="3"
+                                           @bind-Value="eventModel.Description" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            Add Event
+                        </button>
+                    </EditForm>
+
+                    @if (!string.IsNullOrEmpty(message))
+                    {
+                        <div class="alert mt-3 @(message.Contains("success") ? "alert-success" : "alert-danger")">
+                            @message
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div>
-        <label> Course: </label>
-        <InputNumber @bind-Value="eventModel.CourseId" />
-    </div>
-
-    <div>
-        <label> Date: </label>
-        <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="eventModel.Date" />
-    </div>
-
-    <div>
-        <label> Description: </label>
-        <InputTextArea @bind-Value="eventModel.Description" />
-    </div>
-
-    <button type="submit">Add Event</button>
-   </EditForm>
 </div>
-
-@if (!string.IsNullOrEmpty(message))
-{
-    <p>@message</p>
-}
-
 
 @code {
     private EventModel eventModel = new();
     private string? message;
 
-    private async Task HandleValidSubmit(){
+    private async Task HandleValidSubmit()
+    {
         var response = await Http.PutAsJsonAsync("api/events", eventModel);
         if (response.IsSuccessStatusCode)
         {
-            message = "✅ Event added successfully!";
+            message = "Event added successfully!";
             eventModel = new EventModel(); // reset form
         }
         else
         {
             var error = await response.Content.ReadAsStringAsync();
-            message = $"❌ Error: {error}";
+            message = $"Error: {error}";
         }
     }
 }
