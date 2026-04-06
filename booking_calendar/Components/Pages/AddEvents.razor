@@ -116,21 +116,49 @@
             return "Sin detalle devuelto por el servidor.";
         }
 
+        // Si el backend devolvió una página HTML (error no controlado),
+        // evitamos mostrar el documento completo dentro del alert.
+        var normalizedBody = body.TrimStart();
+        if (normalizedBody.StartsWith("<!DOCTYPE", StringComparison.OrdinalIgnoreCase) ||
+            normalizedBody.StartsWith("<html", StringComparison.OrdinalIgnoreCase))
+        {
+            return "El servidor devolvió un error no controlado. Intenta nuevamente en unos segundos.";
+        }
+
         try
         {
             using var doc = JsonDocument.Parse(body);
             var root = doc.RootElement;
 
+            string? messageText = null;
+            string? detailText = null;
+
             if (root.TryGetProperty("message", out var messageValue) &&
                 messageValue.ValueKind == JsonValueKind.String)
             {
-                return messageValue.GetString() ?? "Error desconocido.";
+                messageText = messageValue.GetString();
             }
 
             if (root.TryGetProperty("title", out var titleValue) &&
                 titleValue.ValueKind == JsonValueKind.String)
             {
-                return titleValue.GetString() ?? "Error desconocido.";
+                messageText ??= titleValue.GetString();
+            }
+
+            if (root.TryGetProperty("detail", out var detailValue) &&
+                detailValue.ValueKind == JsonValueKind.String)
+            {
+                detailText = detailValue.GetString();
+            }
+
+            if (!string.IsNullOrWhiteSpace(messageText) && !string.IsNullOrWhiteSpace(detailText))
+            {
+                return $"{messageText} ({detailText})";
+            }
+
+            if (!string.IsNullOrWhiteSpace(messageText))
+            {
+                return messageText;
             }
         }
         catch

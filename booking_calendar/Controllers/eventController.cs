@@ -23,36 +23,78 @@ public class EventController : ControllerBase // this is a simple controller tha
     [HttpGet]
     public async Task<IActionResult> GetEvents()
     {
-        // This queries all events from the database.
-        var events = await _db.Events
-            .Select(e => new EventListItemDto
-            {
-                Id = e.Id,
-                Name = e.Name ?? string.Empty,
-                Date = e.Date,
-                Description = e.Description ?? string.Empty,
-                CourseId = e.CourseId ?? 0  // Use 0 if CourseId is null
-            })
-            .ToListAsync();
 
-        // This returns the real data from the database.
-        return Ok(events);
+7        try
+        {
+            // This queries all events from the database.
+            var events = await _db.Events
+                .Select(e => new EventListItemDto
+                {
+                    Id = e.Id,
+                    Name = e.Name ?? string.Empty,
+                    Date = e.Date,
+                    Description = e.Description ?? string.Empty,
+                    CourseId = e.CourseId ?? 0  // Use 0 if CourseId is null
+                })
+                .ToListAsync();
+
+            // This returns the real data from the database.
+            return Ok(events);
+        }
+        catch (Exception ex) when (IsTransientDatabaseFailure(ex))
+        {
+            // Error transitorio: conectividad de red/host/timeout. El cliente debe reintentar.
+            return StatusCode(503, new
+            {
+                message = "Base de datos temporalmente no disponible. Intenta nuevamente.",
+                detail = GetErrorDetail(ex)
+            });
+        }
+        catch (Exception ex)
+        {
+            // Error no transitorio: se informa 500 con mensaje claro para el frontend.
+            return StatusCode(500, new
+            {
+                message = "No se pudieron cargar los eventos.",
+                detail = GetErrorDetail(ex)
+            });
+        }
     }
 
     // This endpoint returns available courses so the UI can send valid CourseId values.
     [HttpGet("courses")]
     public async Task<IActionResult> GetCourses()
     {
-        var courses = await _db.Courses
-            .OrderBy(c => c.Id)
-            .Select(c => new CourseListItemDto
-            {
-                Id = c.Id,
-                Name = string.IsNullOrWhiteSpace(c.Name) ? $"Course {c.Id}" : c.Name
-            })
-            .ToListAsync();
+        try
+        {
+            var courses = await _db.Courses
+                .OrderBy(c => c.Id)
+                .Select(c => new CourseListItemDto
+                {
+                    Id = c.Id,
+                    Name = string.IsNullOrWhiteSpace(c.Name) ? $"Course {c.Id}" : c.Name
+                })
+                .ToListAsync();
 
-        return Ok(courses);
+            return Ok(courses);
+        }
+        catch (Exception ex) when (IsTransientDatabaseFailure(ex))
+        {
+            // Error transitorio: se responde 503 para que la UI no reciba HTML de error.
+            return StatusCode(503, new
+            {
+                message = "Base de datos temporalmente no disponible. Intenta nuevamente.",
+                detail = GetErrorDetail(ex)
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "No se pudieron cargar los cursos.",
+                detail = GetErrorDetail(ex)
+            });
+        }
     }
 
     // Use HttpPost for creating new resources (HttpPut is for updates)
@@ -64,44 +106,44 @@ public class EventController : ControllerBase // this is a simple controller tha
             return ValidationProblem(ModelState);
         }
 
-        var normalizedCourseId = model.CourseId.GetValueOrDefault() == 0 ? null : model.CourseId;
-
-        if (normalizedCourseId.HasValue)
-        {
-            var courseExists = await _db.Courses.AnyAsync(c => c.Id == normalizedCourseId.Value);
-            if (!courseExists)
-            {
-                return BadRequest(new
-                {
-                    message = $"CourseId {normalizedCourseId.Value} no existe en Course. Usa 0/null o un Id valido."
-                });
-            }
-        }
-
-        // Map EventModel to Event entity
-        var evt = new Event
-        {
-            Name = model.Name,
-            Date = model.Date,
-            Description = model.Description ?? string.Empty,
-            // Convert 0 to null for CourseId (when input is empty, it sends 0)
-            CourseId = normalizedCourseId
-        };
-
         try
         {
+            var normalizedCourseId = model.CourseId.GetValueOrDefault() == 0 ? null : model.CourseId;
+
+            if (normalizedCourseId.HasValue)
+            {
+                var courseExists = await _db.Courses.AnyAsync(c => c.Id == normalizedCourseId.Value);
+                if (!courseExists)
+                {
+                    return BadRequest(new
+                    {
+                        message = $"CourseId {normalizedCourseId.Value} no existe en Course. Usa 0/null o un Id valido."
+                    });
+                }
+            }
+
+            // Map EventModel to Event entity
+            var evt = new Event
+            {
+                Name = model.Name,
+                Date = model.Date,
+                Description = model.Description ?? string.Empty,
+                // Convert 0 to null for CourseId (when input is empty, it sends 0)
+                CourseId = normalizedCourseId
+            };
+
             _db.Events.Add(evt);
             await _db.SaveChangesAsync();
             return Ok(evt);
         }
-        catch (RetryLimitExceededException ex)
+        catch (Exception ex) when (IsTransientDatabaseFailure(ex))
         {
-            // Falla transitoria: EF Core agotó los 5 reintentos automáticos sin recuperarse.
-            // Se devuelve 503 para que el frontend muestre un mensaje accionable al usuario.
+            // Falla transitoria: problema de conectividad o timeout.
+            // Se devuelve 503 para que el frontend muestre un mensaje claro y reintente.
             return StatusCode(503, new
             {
                 message = "Base de datos temporalmente no disponible. Intenta nuevamente.",
-                detail = ex.InnerException?.Message ?? ex.Message
+                detail = GetErrorDetail(ex)
             });
         }
         catch (DbUpdateException ex)
@@ -111,9 +153,43 @@ public class EventController : ControllerBase // this is a simple controller tha
             return StatusCode(500, new
             {
                 message = "No se pudo guardar el evento en la base de datos.",
-                detail = ex.InnerException?.Message ?? ex.Message
+                detail = GetErrorDetail(ex)
             });
         }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "Ocurrió un error inesperado al guardar el evento.",
+                detail = GetErrorDetail(ex)
+            });
+        }
+    }
+
+    // Este helper detecta fallos transitorios de DB incluso cuando vienen envueltos.
+    private static bool IsTransientDatabaseFailure(Exception ex)
+    {
+        Exception? current = ex;
+        while (current is not null)
+        {
+            if (current is RetryLimitExceededException ||
+                current is TimeoutException ||
+                current.GetType().Name.Contains("MySqlException", StringComparison.OrdinalIgnoreCase) ||
+                current.Message.Contains("Unable to connect to any of the specified MySQL hosts", StringComparison.OrdinalIgnoreCase) ||
+                current.Message.Contains("transient", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            current = current.InnerException;
+        }
+
+        return false;
+    }
+
+    private static string GetErrorDetail(Exception ex)
+    {
+        return ex.InnerException?.Message ?? ex.Message;
     }
 
     // This DTO keeps the list view response simple and read-only.
