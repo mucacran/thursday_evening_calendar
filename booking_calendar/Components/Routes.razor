@@ -1,6 +1,19 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+﻿@using booking_calendar.Components.Pages
+
+@* Router ya no soporta la propiedad NotFoundPage en la API actual.
+   Se reemplaza por el bloque <NotFound> para definir qué renderizar en rutas inexistentes. *@
+<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
+        @* Se mantiene el layout principal para rutas válidas. *@
         <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        @* Se mantiene el enfoque automático en h1 al navegar entre páginas. *@
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        @* Para rutas no existentes, se usa el mismo layout y se muestra la página NotFound. *@
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            @* Se renderiza por tipo para evitar ambiguedad de etiquetas con namespace en Razor. *@
+            <DynamicComponent Type="typeof(Pages.NotFound)" />
+        </LayoutView>
+    </NotFound>
 </Router>
