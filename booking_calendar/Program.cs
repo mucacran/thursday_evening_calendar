@@ -54,7 +54,14 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection no est� configurado.");
 
 builder.Services.AddDbContext<meetingContext>(options =>
-    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21)))
+    // Se activa reintento automático para fallos transitorios de red o MySQL remoto (ej. Aiven).
+    // EF Core reintentará hasta 5 veces con retardo creciente antes de lanzar excepción.
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 21)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null
+        ))
 );
 
 var app = builder.Build();

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage; // para RetryLimitExceededException
 
 namespace booking_calendar;
 
@@ -93,8 +94,20 @@ public class EventController : ControllerBase // this is a simple controller tha
             await _db.SaveChangesAsync();
             return Ok(evt);
         }
+        catch (RetryLimitExceededException ex)
+        {
+            // Falla transitoria: EF Core agotó los 5 reintentos automáticos sin recuperarse.
+            // Se devuelve 503 para que el frontend muestre un mensaje accionable al usuario.
+            return StatusCode(503, new
+            {
+                message = "Base de datos temporalmente no disponible. Intenta nuevamente.",
+                detail = ex.InnerException?.Message ?? ex.Message
+            });
+        }
         catch (DbUpdateException ex)
         {
+            // Falla no transitoria: violación de restricción, tipo de dato incorrecto, etc.
+            // Se devuelve 500 porque reintentar no resolvería el problema.
             return StatusCode(500, new
             {
                 message = "No se pudo guardar el evento en la base de datos.",
